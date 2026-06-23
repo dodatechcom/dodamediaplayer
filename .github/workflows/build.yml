@@ -1,0 +1,94 @@
+name: Build & Package
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+      - name: Build with PyInstaller
+        run: pyinstaller doda-player.spec
+      - name: Build Inno Setup installer
+        run: |
+          iscc build/installer/windows/setup.iss
+        shell: cmd
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DodaMediaPlayer-Windows
+          path: build/installer/windows/Output/*.exe
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgl1-mesa-dev libegl1-mesa-dev \
+            libxkbcommon-x11-0 libxcb-cursor0 \
+            fuse3 libfuse2 desktop-file-utils
+      - name: Install Python deps
+        run: |
+          pip install -r requirements.txt
+          pip install pyinstaller
+      - name: Build with PyInstaller
+        run: pyinstaller doda-player.spec
+      - name: Build AppImage
+        run: bash build/installer/linux/appimage.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DodaMediaPlayer-Linux
+          path: build/installer/linux/Output/*.AppImage
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: |
+          pip install -r requirements.txt
+          pip install pyinstaller
+      - name: Build with PyInstaller
+        run: pyinstaller doda-player.spec
+      - name: Create DMG
+        run: bash build/installer/macos/create-dmg.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DodaMediaPlayer-macOS
+          path: build/installer/macos/Output/*.dmg
+
+  release:
+    needs: [build-windows, build-linux, build-macos]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/download-artifact@v4
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            DodaMediaPlayer-Windows/*.exe
+            DodaMediaPlayer-Linux/*.AppImage
+            DodaMediaPlayer-macOS/*.dmg
