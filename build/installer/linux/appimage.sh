@@ -5,7 +5,7 @@ set -euo pipefail
 # Requires: appimagetool (downloaded automatically)
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 DIST="$ROOT/dist/doda-player"
 OUTPUT="$ROOT/build/installer/linux/Output"
 mkdir -p "$OUTPUT"

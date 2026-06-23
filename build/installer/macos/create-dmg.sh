@@ -4,7 +4,7 @@ set -euo pipefail
 # Create DMG for Doda Media Player
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 OUTPUT="$ROOT/build/installer/macos/Output"
 mkdir -p "$OUTPUT"
 
