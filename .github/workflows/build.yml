@@ -20,17 +20,34 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pyinstaller
+          pip install pyinstaller yt-dlp
+      - name: Generate icons
+        run: python build/generate_icons.py
+        env:
+          QT_QPA_PLATFORM: offscreen
       - name: Build with PyInstaller
         run: pyinstaller doda-player.spec
+      - name: Install Inno Setup
+        run: |
+          choco install innosetup --no-progress -y
+          echo "ISCC_DIR=C:\Program Files (x86)\Inno Setup 6" >> $env:GITHUB_ENV
       - name: Build Inno Setup installer
         run: |
-          iscc build/installer/windows/setup.iss
-        shell: cmd
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            $iscc = "${env:ProgramFiles}\Inno Setup 6\ISCC.exe"
+          }
+          if (Test-Path $iscc) {
+            & $iscc build/installer/windows/setup.iss
+          } else {
+            Write-Warning "Inno Setup not found, skipping installer"
+            New-Item -ItemType Directory -Path build/installer/windows/Output -Force
+            Compress-Archive -Path dist/doda-player/* -DestinationPath build/installer/windows/Output/DodaMediaPlayer-0.1.0-Portable.zip
+          }
       - uses: actions/upload-artifact@v4
         with:
           name: DodaMediaPlayer-Windows
-          path: build/installer/windows/Output/*.exe
+          path: build/installer/windows/Output/*
 
   build-linux:
     runs-on: ubuntu-latest
@@ -45,11 +62,13 @@ jobs:
           sudo apt-get install -y \
             libgl1-mesa-dev libegl1-mesa-dev \
             libxkbcommon-x11-0 libxcb-cursor0 \
-            fuse3 libfuse2 desktop-file-utils
+            libfuse2 desktop-file-utils wget
       - name: Install Python deps
         run: |
           pip install -r requirements.txt
-          pip install pyinstaller
+          pip install pyinstaller yt-dlp
+      - name: Generate icons
+        run: QT_QPA_PLATFORM=offscreen python build/generate_icons.py
       - name: Build with PyInstaller
         run: pyinstaller doda-player.spec
       - name: Build AppImage
@@ -57,7 +76,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: DodaMediaPlayer-Linux
-          path: build/installer/linux/Output/*.AppImage
+          path: build/installer/linux/Output/*
 
   build-macos:
     runs-on: macos-latest
@@ -69,7 +88,9 @@ jobs:
       - name: Install deps
         run: |
           pip install -r requirements.txt
-          pip install pyinstaller
+          pip install pyinstaller yt-dlp
+      - name: Generate icons + icns
+        run: QT_QPA_PLATFORM=offscreen python build/generate_icons.py
       - name: Build with PyInstaller
         run: pyinstaller doda-player.spec
       - name: Create DMG
@@ -77,7 +98,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: DodaMediaPlayer-macOS
-          path: build/installer/macos/Output/*.dmg
+          path: build/installer/macos/Output/*
 
   release:
     needs: [build-windows, build-linux, build-macos]
@@ -90,5 +111,6 @@ jobs:
         with:
           files: |
             DodaMediaPlayer-Windows/*.exe
+            DodaMediaPlayer-Windows/*.zip
             DodaMediaPlayer-Linux/*.AppImage
             DodaMediaPlayer-macOS/*.dmg

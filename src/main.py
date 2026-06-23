@@ -28,7 +28,12 @@ def main():
 
     engine = QQmlApplicationEngine()
 
+    # Support both development (src/ui/) and PyInstaller bundle (ui/)
     qml_dir = os.path.join(os.path.dirname(__file__), "ui")
+    if not os.path.isdir(qml_dir):
+        qml_dir = os.path.join(os.path.dirname(__file__), "src", "ui")
+    if not os.path.isdir(qml_dir):
+        qml_dir = os.path.abspath("ui")
     engine.addImportPath(qml_dir)
 
     engine.rootContext().setContextProperty("app", controller)
