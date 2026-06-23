@@ -2,39 +2,36 @@
 set -euo pipefail
 
 # Build AppImage for Doda Media Player
-# Requires: linuxdeploy (downloaded automatically)
+# Requires: appimagetool (downloaded automatically)
 
-ROOT="$(dirname "$(readlink -f "$0")")/../.."
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+DIST="$ROOT/dist/doda-player"
 OUTPUT="$ROOT/build/installer/linux/Output"
 mkdir -p "$OUTPUT"
 
-# Get linuxdeploy
-if [ ! -f /tmp/linuxdeploy-x86_64.AppImage ]; then
-    wget -q -O /tmp/linuxdeploy-x86_64.AppImage \
-        "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
-    chmod +x /tmp/linuxdeploy-x86_64.AppImage
-fi
-
-# linuxdeploy may not run in Docker without FUSE
-# Use --appimage-extract in that case
-export LDAI_EXEC="/tmp/linuxdeploy-x86_64.AppImage"
-if ! "$LDAI_EXEC" --appimage-extract >/dev/null 2>&1; then
-    # Extract manually
-    cd /tmp
-    "$LDAI_EXEC" --appimage-extract >/dev/null 2>&1 || true
-    LDAI_EXEC="/tmp/squashfs-root/AppRun"
-fi
-
-# Create AppDir structure
 APPDIR="$OUTPUT/DodaMediaPlayer.AppDir"
 rm -rf "$APPDIR"
 mkdir -p "$APPDIR/usr/bin"
 mkdir -p "$APPDIR/usr/share/applications"
 mkdir -p "$APPDIR/usr/share/icons/hicolor/256x256/apps"
 
-# Copy PyInstaller build
-cp -r "$ROOT/dist/doda-player"/* "$APPDIR/usr/bin/"
-ln -sf "../usr/bin/doda-player" "$APPDIR/AppRun"
+# Copy PyInstaller onedir output
+if [ -d "$DIST" ]; then
+    cp -r "$DIST"/* "$APPDIR/usr/bin/"
+else
+    echo "ERROR: $DIST not found. Run PyInstaller first."
+    exit 1
+fi
+
+# AppRun script
+cat > "$APPDIR/AppRun" <<'APPRUN'
+#!/usr/bin/env bash
+APPDIR="$(dirname "$(readlink -f "$0")")"
+export PATH="$APPDIR/usr/bin:$PATH"
+exec "$APPDIR/usr/bin/doda-player" "$@"
+APPRUN
+chmod +x "$APPDIR/AppRun"
 
 # Desktop file
 cat > "$APPDIR/usr/share/applications/doda-player.desktop" <<'DESKTOP'
@@ -49,28 +46,28 @@ Categories=AudioVideo;Player;
 DESKTOP
 cp "$APPDIR/usr/share/applications/doda-player.desktop" "$APPDIR/"
 
-# Icon (use generated PNG)
-if [ -f "$ROOT/build/installer/linux/doda-player.png" ]; then
-    cp "$ROOT/build/installer/linux/doda-player.png" "$APPDIR/usr/share/icons/hicolor/256x256/apps/doda-player.png"
-    cp "$APPDIR/usr/share/icons/hicolor/256x256/apps/doda-player.png" "$APPDIR/doda-player.png"
+# Icon
+ICON_SRC="$ROOT/build/installer/linux/doda-player.png"
+if [ -f "$ICON_SRC" ]; then
+    cp "$ICON_SRC" "$APPDIR/usr/share/icons/hicolor/256x256/apps/doda-player.png"
+    cp "$ICON_SRC" "$APPDIR/doda-player.png"
 fi
 
-# Run linuxdeploy
-cd "$OUTPUT"
-$LDAI_EXEC --appdir "$APPDIR" --output appimage \
-    --desktop-file "$APPDIR/usr/share/applications/doda-player.desktop" \
-    --icon-file "$APPDIR/doda-player.png" 2>&1 || {
-    # Fallback: manual AppImage creation
-    echo "linuxdeploy failed, creating manual AppImage..."
-    if command -v appimagetool &>/dev/null; then
-        appimagetool "$APPDIR"
-    else
-        wget -q -O /tmp/appimagetool "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
-        chmod +x /tmp/appimagetool
-        /tmp/appimagetool "$APPDIR"
-    fi
-}
+# Download appimagetool
+APPIMAGETOOL="/tmp/appimagetool-x86_64.AppImage"
+if [ ! -f "$APPIMAGETOOL" ]; then
+    wget -q -O "$APPIMAGETOOL" \
+        "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
+    chmod +x "$APPIMAGETOOL"
+fi
 
-# Move result
-mv DodaMediaPlayer-*.AppImage "$OUTPUT/" 2>/dev/null || true
-echo "AppImage built in $OUTPUT"
+# Extract if FUSE unavailable
+if ! "$APPIMAGETOOL" --help >/dev/null 2>&1; then
+    cd /tmp
+    "$APPIMAGETOOL" --appimage-extract >/dev/null 2>&1 || true
+    APPIMAGETOOL="/tmp/squashfs-root/AppRun"
+fi
+
+cd "$OUTPUT"
+$APPIMAGETOOL "$APPDIR" "DodaMediaPlayer-0.1.0-x86_64.AppImage"
+echo "AppImage built: $OUTPUT/DodaMediaPlayer-0.1.0-x86_64.AppImage"

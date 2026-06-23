@@ -2,20 +2,50 @@
 set -euo pipefail
 
 # Create DMG for Doda Media Player
-# Requires: create-dmg (optional, falls back to hdiutil)
 
-ROOT="$(dirname "$(readlink -f "$0")")/../.."
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 OUTPUT="$ROOT/build/installer/macos/Output"
 mkdir -p "$OUTPUT"
-APP_BUNDLE="$ROOT/dist/DodaMediaPlayer.app"
 
+# Try .app bundle first, fall back to onedir
+APP_BUNDLE="$ROOT/dist/DodaMediaPlayer.app"
 if [ ! -d "$APP_BUNDLE" ]; then
-    echo "ERROR: $APP_BUNDLE not found. Run PyInstaller first."
-    exit 1
+    echo "WARNING: $APP_BUNDLE not found. Wrapping onedir as .app..."
+    ONEDIR="$ROOT/dist/doda-player"
+    if [ -d "$ONEDIR" ]; then
+        APP_BUNDLE="$OUTPUT/DodaMediaPlayer.app"
+        rm -rf "$APP_BUNDLE"
+        mkdir -p "$APP_BUNDLE/Contents/MacOS"
+        mkdir -p "$APP_BUNDLE/Contents/Resources"
+        cp -r "$ONEDIR"/* "$APP_BUNDLE/Contents/MacOS/"
+        ln -sf "Contents/MacOS/doda-player" "$APP_BUNDLE/doda-player"
+        cat > "$APP_BUNDLE/Contents/Info.plist" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+"http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleExecutable</key>
+    <string>doda-player</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.doda.mediaplayer</string>
+    <key>CFBundleName</key>
+    <string>DodaMediaPlayer</string>
+    <key>CFBundleVersion</key>
+    <string>0.1.0</string>
+    <key>CFBundleShortVersionString</key>
+    <string>0.1.0</string>
+</dict>
+</plist>
+PLIST
+    else
+        echo "ERROR: Neither $APP_BUNDLE nor $ONEDIR found. Run PyInstaller first."
+        exit 1
+    fi
 fi
 
 DMG_NAME="DodaMediaPlayer-0.1.0.dmg"
-
 if command -v create-dmg &>/dev/null; then
     create-dmg \
         --volname "Doda Media Player" \
@@ -28,7 +58,6 @@ if command -v create-dmg &>/dev/null; then
         "$OUTPUT/$DMG_NAME" \
         "$APP_BUNDLE"
 else
-    # Fallback: hdiutil
     STAGING="$OUTPUT/staging"
     rm -rf "$STAGING"
     mkdir -p "$STAGING"

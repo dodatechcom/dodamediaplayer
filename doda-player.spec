@@ -90,10 +90,8 @@ pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
     [],
+    exclude_binaries=True,
     name="doda-player",
     debug=False,
     bootloader_ignore_signals=False,
@@ -109,12 +107,23 @@ exe = EXE(
     entitlements_file=None,
 )
 
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    name="doda-player",
+)
+
 if sys.platform == "darwin":
     icns_path = "build/installer/macos/icon.icns"
     if not os.path.isfile(icns_path):
         icns_path = ""
     app = BUNDLE(
-        exe,
+        coll,
         name="DodaMediaPlayer.app",
         icon=icns_path if icns_path else None,
         bundle_identifier="com.doda.mediaplayer",
