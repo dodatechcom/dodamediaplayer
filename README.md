@@ -144,6 +144,54 @@ DodaMediaPlayer/
 │       ├── main.qml         # Main window, all controls and overlays
 │       └── icons/           # 19 SVG icons (3D gradient style)
 ├── tests/
+├── doda-player.spec         # PyInstaller build spec
+├── requirements.txt
+├── pyproject.toml
+└── README.md
+```
+
+## Install from Release
+
+Download from the [releases page](https://github.com/dodatechcom/dodamediaplayer/releases):
+
+| Platform | Format | Command |
+|----------|--------|---------|
+| **Linux** | `.deb` | `sudo dpkg -i doda-media-player_*.deb` |
+| **Linux** | `.AppImage` | `chmod +x *.AppImage && ./DodaMediaPlayer-*.AppImage` |
+| **Windows** | `.exe` | Run the Inno Setup installer |
+| **macOS** | `.dmg` | Mount and drag to Applications |
+
+## Build from Source
+
+```bash
+git clone https://github.com/dodatechcom/dodamediaplayer.git
+cd dodamediaplayer
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+.venv/bin/pip install pyinstaller
+.venv/bin/pyinstaller doda-player.spec
+```
+
+The packaged build will be in `dist/doda-player/`.
+
+### Developer Run
+
+```bash
+.venv/bin/python -c "import sys; sys.path.insert(0, '.'); from src.main import main; main()"
+```
+DodaMediaPlayer/
+├── src/
+│   ├── main.py              # Entry point
+│   ├── app.py               # AppController (Python ↔ QML bridge)
+│   ├── core/
+│   │   ├── config.py        # Settings persistence (JSON)
+│   │   ├── visualizer.py    # Audio FFT spectrum analyzer
+│   │   ├── subtitles.py     # SRT/ASS parser
+│   │   └── playlist.py      # Playlist model with shuffle/repeat
+│   └── ui/
+│       ├── main.qml         # Main window, all controls and overlays
+│       └── icons/           # 19 SVG icons (3D gradient style)
+├── tests/
 ├── requirements.txt
 ├── pyproject.toml
 └── README.md
