@@ -33,9 +33,9 @@ if [ ! -d "$APP_BUNDLE" ]; then
     <key>CFBundleName</key>
     <string>DodaMediaPlayer</string>
     <key>CFBundleVersion</key>
-    <string>0.1.0</string>
+    <string>0.1.1</string>
     <key>CFBundleShortVersionString</key>
-    <string>0.1.0</string>
+    <string>0.1.1</string>
 </dict>
 </plist>
 PLIST
@@ -45,7 +45,7 @@ PLIST
     fi
 fi
 
-DMG_NAME="DodaMediaPlayer-0.1.0.dmg"
+DMG_NAME="DodaMediaPlayer-0.1.1.dmg"
 if command -v create-dmg &>/dev/null; then
     create-dmg \
         --volname "Doda Media Player" \

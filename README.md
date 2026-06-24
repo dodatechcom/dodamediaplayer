@@ -174,25 +174,15 @@ python3 -m venv .venv
 
 The packaged build will be in `dist/doda-player/`.
 
+To build a .deb package (Linux):
+
+```bash
+bash build/installer/linux/build-deb.sh
+```
+
 ### Developer Run
 
 ```bash
 .venv/bin/python -c "import sys; sys.path.insert(0, '.'); from src.main import main; main()"
 ```
-DodaMediaPlayer/
-├── src/
-│   ├── main.py              # Entry point
-│   ├── app.py               # AppController (Python ↔ QML bridge)
-│   ├── core/
-│   │   ├── config.py        # Settings persistence (JSON)
-│   │   ├── visualizer.py    # Audio FFT spectrum analyzer
-│   │   ├── subtitles.py     # SRT/ASS parser
-│   │   └── playlist.py      # Playlist model with shuffle/repeat
-│   └── ui/
-│       ├── main.qml         # Main window, all controls and overlays
-│       └── icons/           # 19 SVG icons (3D gradient style)
-├── tests/
-├── requirements.txt
-├── pyproject.toml
-└── README.md
 ```

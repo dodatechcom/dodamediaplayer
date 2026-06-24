@@ -1,5 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
-import os, sys, glob
+import os, sys, glob, shutil
 
 block_cipher = None
 
@@ -11,17 +11,35 @@ for f in glob.glob("src/ui/*.qml"):
 for f in glob.glob("src/ui/icons/*.svg"):
     datas.append((f, "ui/icons"))
 
-# Collect Qt QML plugins (import paths, etc.)
-from PyInstaller.utils.hooks import collect_data_files
-qml_plugin_datas = collect_data_files("PyQt6.QtQml")
-for src, dst in qml_plugin_datas:
-    found = False
-    for i, (s, d) in enumerate(datas):
-        if s == src and d == dst:
-            found = True
-            break
-    if not found:
-        datas.append((src, dst))
+# Collect required Qt QML imports and FFmpeg DLLs
+try:
+    import PyQt6
+    QT6_DIR = os.path.join(os.path.dirname(PyQt6.__file__), "Qt6")
+    QML_IMPORTS_DIR = os.path.join(QT6_DIR, "qml")
+    QML_NEEDED = {"QtCore", "QtMultimedia", "QtQml", "QtQuick", "QtNetwork"}
+    if os.path.isdir(QML_IMPORTS_DIR):
+        for import_name in QML_NEEDED:
+            src = os.path.join(QML_IMPORTS_DIR, import_name)
+            if os.path.isdir(src):
+                for root, dirs, files in os.walk(src):
+                    for fn in files:
+                        file_path = os.path.join(root, fn)
+                        rel = os.path.relpath(os.path.dirname(file_path), QML_IMPORTS_DIR)
+                        datas.append((file_path, f"PyQt6/Qt6/qml/{rel}"))
+
+    for lib_dir in ["lib", "bin"]:
+        path = os.path.join(QT6_DIR, lib_dir)
+        if os.path.isdir(path):
+            for fn in os.listdir(path):
+                if any(fn.startswith(p) for p in ["libav", "libsw", "av", "sw"]):
+                    datas.append((os.path.join(path, fn), f"PyQt6/Qt6/{lib_dir}"))
+
+    mm_plugin_src = os.path.join(QT6_DIR, "plugins", "multimedia")
+    if os.path.isdir(mm_plugin_src):
+        for fn in os.listdir(mm_plugin_src):
+            datas.append((os.path.join(mm_plugin_src, fn), "PyQt6/Qt6/plugins/multimedia"))
+except Exception:
+    pass
 
 # Find yt-dlp binary
 ytdlp_bin = None
@@ -130,8 +148,8 @@ if sys.platform == "darwin":
         info_plist={
             "CFBundleDisplayName": "Doda Media Player",
             "CFBundleName": "DodaMediaPlayer",
-            "CFBundleVersion": "0.1.0",
-            "CFBundleShortVersionString": "0.1.0",
+            "CFBundleVersion": "0.1.1",
+            "CFBundleShortVersionString": "0.1.1",
             "NSHighResolutionCapable": True,
         },
     )

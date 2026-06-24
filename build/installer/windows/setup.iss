@@ -2,7 +2,7 @@
 ; Requires Inno Setup 6+ (https://jrsoftware.org/isinfo.php)
 
 #define MyAppName "Doda Media Player"
-#define MyAppVersion "0.1.0"
+#define MyAppVersion "0.1.1"
 #define MyAppPublisher "DodaMediaPlayer"
 #define MyAppURL "https://github.com/doda/media-player"
 #define MyAppExeName "doda-player.exe"

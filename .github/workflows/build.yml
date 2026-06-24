@@ -42,7 +42,7 @@ jobs:
           } else {
             Write-Warning "Inno Setup not found, skipping installer"
             New-Item -ItemType Directory -Path build/installer/windows/Output -Force
-            Compress-Archive -Path dist/doda-player/* -DestinationPath build/installer/windows/Output/DodaMediaPlayer-0.1.0-Portable.zip
+            Compress-Archive -Path dist/doda-player/* -DestinationPath build/installer/windows/Output/DodaMediaPlayer-0.1.1-Portable.zip
           }
       - uses: actions/upload-artifact@v4
         with:

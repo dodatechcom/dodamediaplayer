@@ -1,22 +1,50 @@
 import os
 import sys
+import traceback
 
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PyQt6.QtQml import QQmlApplicationEngine
 from PyQt6.QtQuick import QQuickItem, QQuickWindow
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication, QMessageBox
 
 from src.app import AppController
 from src.core.config import Config
 
+CRASH_LOG = os.path.join(os.path.expanduser("~"), ".config", "doda-player", "crash.log")
+
+
+def _crash_handler(exctype, value, tb):
+    msg = "".join(traceback.format_exception(exctype, value, tb))
+    os.makedirs(os.path.dirname(CRASH_LOG), exist_ok=True)
+    with open(CRASH_LOG, "w") as f:
+        f.write(msg)
+    try:
+        app = QGuiApplication.instance()
+        if app:
+            mb = QMessageBox()
+            mb.setWindowTitle("Doda Media Player - Error")
+            mb.setText("An unexpected error occurred.\n\nThe application will now exit.")
+            mb.setDetailedText(msg)
+            mb.setIcon(QMessageBox.Icon.Critical)
+            mb.exec()
+    except Exception:
+        pass
+    sys.__excepthook__(exctype, value, tb)
+
 
 def main():
+    sys.excepthook = _crash_handler
     QQuickWindow.setDefaultAlphaBuffer(True)
 
     app = QApplication(sys.argv)
     app.setApplicationName("Doda Media Player")
     app.setOrganizationName("DodaMedia")
     app.setOrganizationDomain("dodamedia.local")
+
+    config_dir = os.path.join(os.path.expanduser("~"), ".config", "doda-player")
+    os.makedirs(config_dir, exist_ok=True)
 
     config = Config()
     controller = AppController(config=config)
@@ -28,7 +56,6 @@ def main():
 
     engine = QQmlApplicationEngine()
 
-    # Support both development (src/ui/) and PyInstaller bundle (ui/)
     qml_dir = os.path.join(os.path.dirname(__file__), "ui")
     if not os.path.isdir(qml_dir):
         qml_dir = os.path.join(os.path.dirname(__file__), "src", "ui")
@@ -42,8 +69,7 @@ def main():
     engine.load(qml_file)
 
     if not engine.rootObjects():
-        print("Failed to load QML", file=sys.stderr)
-        sys.exit(1)
+        raise RuntimeError("Failed to load QML - check crash.log for details")
 
     window = engine.rootObjects()[0]
     controller.set_window(window)

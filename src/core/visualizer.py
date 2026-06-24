@@ -1,6 +1,5 @@
 import threading
 import numpy as np
-import av
 
 SAMPLE_RATE = 22050
 WINDOW_SIZE = 2048
@@ -21,6 +20,7 @@ class AudioVisualizer:
 
     def _build_for_file(self, path: str, callback=None):
         try:
+            import av
             container = av.open(path, metadata_encoding="latin-1", metadata_errors="ignore")
             audio_stream = next(
                 (s for s in container.streams if s.type == "audio"), None

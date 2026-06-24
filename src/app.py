@@ -25,7 +25,9 @@ ALBUM_ART_DIR = os.path.join(tempfile.gettempdir(), "doda-album-art")
 
 def _find_ytdlp():
     candidates = [
+        os.path.join(os.path.dirname(sys.executable), "yt-dlp.exe"),
         os.path.join(os.path.dirname(sys.executable), "yt-dlp"),
+        "yt-dlp.exe",
         "yt-dlp",
     ]
     for c in candidates:
@@ -34,7 +36,7 @@ def _find_ytdlp():
             return c
         except FileNotFoundError:
             continue
-    return "yt-dlp"
+    return "yt-dlp.exe" if sys.platform == "win32" else "yt-dlp"
 
 
 def _resolve_url(url):
@@ -595,6 +597,7 @@ class AppController(QObject):
     @pyqtSlot(result=bool)
     def savePlaylist(self):
         try:
+            os.makedirs(os.path.dirname(self.PLAYLIST_FILE), exist_ok=True)
             self._playlist.save_m3u(self.PLAYLIST_FILE)
             return True
         except Exception:
@@ -781,7 +784,12 @@ class AppController(QObject):
                 self._play(self._dl_output_path)
             elif msg.clickedButton() == open_btn:
                 folder = os.path.dirname(self._dl_output_path)
-                subprocess.run(["xdg-open", folder], check=False)
+                if sys.platform == "win32":
+                    os.startfile(folder)
+                elif sys.platform == "darwin":
+                    subprocess.run(["open", folder], check=False)
+                else:
+                    subprocess.run(["xdg-open", folder], check=False)
         else:
             if hasattr(self, '_dl_progress'):
                 self._dl_progress = None

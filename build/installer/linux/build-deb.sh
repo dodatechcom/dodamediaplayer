@@ -10,7 +10,7 @@ DIST="$ROOT/dist/doda-player"
 OUTPUT="$ROOT/build/installer/linux/Output"
 mkdir -p "$OUTPUT"
 
-VERSION="0.1.0"
+VERSION="0.1.1"
 PACKAGE="doda-media-player"
 ARCH="amd64"
 DEB_DIR="$OUTPUT/${PACKAGE}_${VERSION}_${ARCH}"
