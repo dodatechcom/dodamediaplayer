@@ -7,10 +7,10 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 DIST="$ROOT/dist/doda-player"
-OUTPUT="$ROOT/build/installer/linux/Output"
+OUTPUT="$ROOT/build"
 mkdir -p "$OUTPUT"
 
-APPDIR="$OUTPUT/DodaMediaPlayer.AppDir"
+APPDIR="$ROOT/build/installer/linux/Output/DodaMediaPlayer.AppDir"
 rm -rf "$APPDIR"
 mkdir -p "$APPDIR/usr/bin"
 mkdir -p "$APPDIR/usr/share/applications"
