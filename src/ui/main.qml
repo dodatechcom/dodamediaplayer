@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtMultimedia
+import QtQuick.Effects
 
 ApplicationWindow {
     id: window
@@ -17,6 +18,10 @@ ApplicationWindow {
     property string currentTrack: ""
     property string originalTitle: "Doda Media Player"
 
+    property real videoBrightness: 0.0
+    property real videoContrast: 0.0
+    property real videoSaturation: 0.0
+
     Item {
         id: videoContainer
         anchors.fill: parent
@@ -28,6 +33,13 @@ ApplicationWindow {
             id: videoOutput
             objectName: "videoOutput"
             anchors.fill: parent
+
+            layer.enabled: true
+            layer.effect: MultiEffect {
+                brightness: window.videoBrightness
+                contrast: window.videoContrast
+                saturation: window.videoSaturation
+            }
         }
 
         Rectangle {
@@ -85,6 +97,26 @@ ApplicationWindow {
             z: 10
             style: Text.Outline
             styleColor: "#000"
+        }
+
+        Text {
+            id: notificationLabel
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: parent.top
+            anchors.topMargin: 40 + (topBar.visible ? topBar.height : 0)
+            color: "#fff"
+            font.pixelSize: 22
+            font.bold: true
+            visible: false
+            z: 20
+            style: Text.Outline
+            styleColor: "#000"
+        }
+        Timer {
+            id: notificationTimer
+            interval: 2000
+            repeat: false
+            onTriggered: notificationLabel.visible = false
         }
 
         Button {
@@ -823,6 +855,29 @@ ApplicationWindow {
             MenuItem { text: "Visualizer On"; checkable: true; checked: visualizerVisible; onTriggered: visualizerVisible = !visualizerVisible }
             MenuItem { text: "Equalizer             E"; checkable: true; checked: eqVisible; onTriggered: eqVisible = !eqVisible }
             MenuItem { text: "Media Info            I"; checkable: true; checked: mediaInfoVisible; onTriggered: mediaInfoVisible = !mediaInfoVisible }
+            Menu {
+                title: "Video Filters"
+                MenuItem { text: "Reset All Filters"; onTriggered: { window.videoBrightness = 0.0; window.videoContrast = 0.0; window.videoSaturation = 0.0; } }
+                MenuSeparator {}
+                Menu {
+                    title: "Brightness (" + Math.round(window.videoBrightness * 100) + "%)"
+                    MenuItem { text: "Increase"; onTriggered: window.videoBrightness = Math.min(1.0, window.videoBrightness + 0.1) }
+                    MenuItem { text: "Decrease"; onTriggered: window.videoBrightness = Math.max(-1.0, window.videoBrightness - 0.1) }
+                    MenuItem { text: "Reset"; onTriggered: window.videoBrightness = 0.0 }
+                }
+                Menu {
+                    title: "Contrast (" + Math.round(window.videoContrast * 100) + "%)"
+                    MenuItem { text: "Increase"; onTriggered: window.videoContrast = Math.min(1.0, window.videoContrast + 0.1) }
+                    MenuItem { text: "Decrease"; onTriggered: window.videoContrast = Math.max(-1.0, window.videoContrast - 0.1) }
+                    MenuItem { text: "Reset"; onTriggered: window.videoContrast = 0.0 }
+                }
+                Menu {
+                    title: "Saturation (" + Math.round(window.videoSaturation * 100) + "%)"
+                    MenuItem { text: "Increase"; onTriggered: window.videoSaturation = Math.min(1.0, window.videoSaturation + 0.1) }
+                    MenuItem { text: "Decrease"; onTriggered: window.videoSaturation = Math.max(-1.0, window.videoSaturation - 0.1) }
+                    MenuItem { text: "Reset"; onTriggered: window.videoSaturation = 0.0 }
+                }
+            }
             Menu {
                 title: "Subtitles          Y"
                 MenuItem { text: "None"; checkable: true; checked: app && app.activeSubtitleIndex < 0; onTriggered: if (app) { app.setActiveSubtitle(-1); app.setSubtitleVisible(false); subtitleTimer.stop(); subtitleLabel.text = "" } }
@@ -2225,6 +2280,8 @@ ApplicationWindow {
     Shortcut { sequence: "Y"; context: Qt.ApplicationShortcut; onActivated: { if (!app) return; if (app.subtitleVisible) { app.setSubtitleVisible(false); subtitleTimer.stop(); subtitleLabel.text = "" } else if (app.subtitleTrackNames.length > 0) { app.setActiveSubtitle(0); app.setSubtitleVisible(true); subtitleTimer.start() } } }
     Shortcut { sequence: "Ctrl+T"; context: Qt.ApplicationShortcut; onActivated: settingsDialog.open() }
     Shortcut { sequence: "Ctrl+P"; context: Qt.ApplicationShortcut; onActivated: togglePip() }
+    Shortcut { sequence: "-"; context: Qt.ApplicationShortcut; onActivated: { if(app) { app.subtitleDelay -= 100; notificationLabel.text = "Subtitle Delay: " + app.subtitleDelay + " ms"; notificationLabel.visible = true; notificationTimer.restart() } } }
+    Shortcut { sequence: "="; context: Qt.ApplicationShortcut; onActivated: { if(app) { app.subtitleDelay += 100; notificationLabel.text = "Subtitle Delay: " + app.subtitleDelay + " ms"; notificationLabel.visible = true; notificationTimer.restart() } } }
     Shortcut {
         sequence: "Escape"
         context: Qt.ApplicationShortcut

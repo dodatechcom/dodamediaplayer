@@ -7,7 +7,8 @@ A cross-platform media player built with Python, PyQt6, QML, and Qt Multimedia (
 - **Playback**: Video/audio files (MP4, MKV, AVI, MOV, MP3, WAV, FLAC, etc.) and YouTube/URL streams via yt-dlp (ad-free — bypasses YouTube's web player entirely)
 - **Dark theme** with auto-hiding controls during playback
 - **URL download** — After resolving a YouTube/URL, choose Stream, Download MP4, or Download MP3 (audio-only). Progress bar, auto-saves to `~/Videos/DodaPlayer` / `~/Music/DodaPlayer`. Download button appears in top bar and context menu during streaming
-- **Subtitles** — SRT and ASS support, auto-detected alongside media files, CC button in bottom bar, Y shortcut
+- **Subtitles** — SRT and ASS support, auto-detected alongside media files, CC button in bottom bar, Y shortcut. Sync adjustment with `+`/`-` keys.
+- **Video Filters** — Brightness, Contrast, and Saturation controls (accessed from the View menu).
 - **Audio visualizer** — 16 fully rendered modes (Bars, Wave, Circle, Mirror, Glow, Fire, Rings, Bubbles, VU Meter, Pinwheel, Meteor, Waves, Water, Stairs, Orbit, X-Ray) with precomputed FFT spectrum
 - **Equalizer** — 10-band graphic EQ with 5 presets (Flat, Rock, Pop, Classical, Dance), gains saved to config
 - **Playlist** — add/remove/reorder files, shuffle, repeat (None/One/All), m3u save/load, drag-and-drop
@@ -103,6 +104,8 @@ Play/Pause, Mute, Previous (P), Next (N), Open File, Fullscreen (F), Visualizer 
 | **Z** | Cycle playback speed |
 | **I** | Toggle media info |
 | **Y** | Toggle subtitles (auto-detects .srt/.ass) |
+| **-** | Advance subtitles by 100ms |
+| **=** | Delay subtitles by 100ms |
 
 ## Mouse Controls
 

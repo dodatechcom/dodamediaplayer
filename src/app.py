@@ -78,6 +78,7 @@ class AppController(QObject):
     errorOccurred = pyqtSignal(int, str)
     sourceChanged = pyqtSignal()
     albumArtChanged = pyqtSignal()
+    subtitleDelayChanged = pyqtSignal(int)
 
     def __init__(self, parent=None, config=None):
         super().__init__(parent)
@@ -92,6 +93,7 @@ class AppController(QObject):
         self._track_path = ""
         self._subtitles = SubtitleManager()
         self._sub_visible = False
+        self._subtitle_delay = 0
         self._current_url = ""
         self._last_state = 0
         self._player = None
@@ -576,9 +578,19 @@ class AppController(QObject):
             self._sub_visible = True
         self.subtitlesChanged.emit()
 
+    @pyqtProperty(int, notify=subtitleDelayChanged)
+    def subtitleDelay(self):
+        return self._subtitle_delay
+
+    @subtitleDelay.setter
+    def subtitleDelay(self, val: int):
+        if self._subtitle_delay != val:
+            self._subtitle_delay = int(val)
+            self.subtitleDelayChanged.emit(self._subtitle_delay)
+
     @pyqtSlot(int, result=str)
     def getSubtitleText(self, position_ms: int):
-        return self._subtitles.get_text(position_ms)
+        return self._subtitles.get_text(position_ms - self._subtitle_delay)
 
     @pyqtSlot()
     def openSubtitleFile(self):
