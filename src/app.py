@@ -79,6 +79,8 @@ class AppController(QObject):
     sourceChanged = pyqtSignal()
     albumArtChanged = pyqtSignal()
     subtitleDelayChanged = pyqtSignal(int)
+    abRepeatStateChanged = pyqtSignal()
+    chaptersChanged = pyqtSignal()
 
     def __init__(self, parent=None, config=None):
         super().__init__(parent)
@@ -96,6 +98,9 @@ class AppController(QObject):
         self._subtitle_delay = 0
         self._current_url = ""
         self._last_state = 0
+        self._ab_repeat_a = -1
+        self._ab_repeat_b = -1
+        self._chapters = []
         self._player = None
         self._audio_output = None
         self._ytdlp = _find_ytdlp()
@@ -145,6 +150,9 @@ class AppController(QObject):
                     QTimer.singleShot(0, self.playNext)
 
     def _on_position_changed(self, pos):
+        if self._ab_repeat_a >= 0 and self._ab_repeat_b > self._ab_repeat_a:
+            if pos >= self._ab_repeat_b:
+                self._player.setPosition(self._ab_repeat_a)
         self.positionChanged.emit(pos)
 
     def _on_duration_changed(self, dur):
@@ -256,11 +264,42 @@ class AppController(QObject):
                         info["audio_channels"] = stream.channels
                     if cc and cc.bit_rate:
                         info["audio_bitrate"] = f"{cc.bit_rate // 1000} kbps"
+
+            chaps = []
+            if hasattr(container, 'chapters') and container.chapters:
+                for i, ch in enumerate(container.chapters):
+                    title = f"Chapter {i+1}"
+                    start_ms = 0
+                    if hasattr(ch, "metadata") and isinstance(ch.metadata, dict):
+                        title = ch.metadata.get("title", title)
+                    elif hasattr(ch, "title"):
+                        title = ch.title
+
+                    if hasattr(ch, "start") and hasattr(ch, "time_base"):
+                        start_ms = int(float(ch.start * ch.time_base) * 1000)
+                    elif hasattr(ch, "start_time"):
+                        start_ms = int(ch.start_time * 1000)
+
+                    chaps.append({"title": title, "start_ms": start_ms})
+            self._chapters = chaps
+            self.chaptersChanged.emit()
+
             container.close()
             self._media_info = info
         except Exception:
             self._media_info = {}
+            self._chapters = []
+            self.chaptersChanged.emit()
         self.mediaInfoChanged.emit()
+
+    @pyqtProperty("QVariantList", notify=chaptersChanged)
+    def chapters(self):
+        return self._chapters
+
+    @pyqtSlot(int)
+    def seekToChapter(self, index):
+        if 0 <= index < len(self._chapters):
+            self.position = self._chapters[index]["start_ms"]
 
     def _extract_album_art(self, path: str):
         self._album_art_path = ""
@@ -577,6 +616,38 @@ class AppController(QObject):
             self._subtitles.active_index = 0
             self._sub_visible = True
         self.subtitlesChanged.emit()
+
+    @pyqtProperty(int, notify=abRepeatStateChanged)
+    def abRepeatA(self):
+        return self._ab_repeat_a
+
+    @pyqtProperty(int, notify=abRepeatStateChanged)
+    def abRepeatB(self):
+        return self._ab_repeat_b
+
+    @pyqtSlot(result=str)
+    def toggleABRepeat(self):
+        if not self._player:
+            return "Off"
+        if self._ab_repeat_a < 0:
+            self._ab_repeat_a = self._player.position()
+            self.abRepeatStateChanged.emit()
+            return "Set A"
+        elif self._ab_repeat_b < 0:
+            pos = self._player.position()
+            if pos > self._ab_repeat_a:
+                self._ab_repeat_b = pos
+                self.abRepeatStateChanged.emit()
+                return "Active"
+            else:
+                self._ab_repeat_a = -1
+                self.abRepeatStateChanged.emit()
+                return "Off"
+        else:
+            self._ab_repeat_a = -1
+            self._ab_repeat_b = -1
+            self.abRepeatStateChanged.emit()
+            return "Off"
 
     @pyqtProperty(int, notify=subtitleDelayChanged)
     def subtitleDelay(self):

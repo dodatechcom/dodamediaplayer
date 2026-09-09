@@ -856,6 +856,20 @@ ApplicationWindow {
             MenuItem { text: "Equalizer             E"; checkable: true; checked: eqVisible; onTriggered: eqVisible = !eqVisible }
             MenuItem { text: "Media Info            I"; checkable: true; checked: mediaInfoVisible; onTriggered: mediaInfoVisible = !mediaInfoVisible }
             Menu {
+                id: chaptersMenu
+                title: "Chapters"
+                enabled: app && app.chapters && app.chapters.length > 0
+                Instantiator {
+                    model: app ? app.chapters : []
+                    delegate: MenuItem {
+                        text: modelData.title
+                        onTriggered: if (app) app.seekToChapter(index)
+                    }
+                    onObjectAdded: function(index, object) { chaptersMenu.insertItem(index, object) }
+                    onObjectRemoved: function(index, object) { chaptersMenu.removeItem(object) }
+                }
+            }
+            Menu {
                 title: "Video Filters"
                 MenuItem { text: "Reset All Filters"; onTriggered: { window.videoBrightness = 0.0; window.videoContrast = 0.0; window.videoSaturation = 0.0; } }
                 MenuSeparator {}
@@ -2282,6 +2296,7 @@ ApplicationWindow {
     Shortcut { sequence: "Ctrl+P"; context: Qt.ApplicationShortcut; onActivated: togglePip() }
     Shortcut { sequence: "-"; context: Qt.ApplicationShortcut; onActivated: { if(app) { app.subtitleDelay -= 100; notificationLabel.text = "Subtitle Delay: " + app.subtitleDelay + " ms"; notificationLabel.visible = true; notificationTimer.restart() } } }
     Shortcut { sequence: "="; context: Qt.ApplicationShortcut; onActivated: { if(app) { app.subtitleDelay += 100; notificationLabel.text = "Subtitle Delay: " + app.subtitleDelay + " ms"; notificationLabel.visible = true; notificationTimer.restart() } } }
+    Shortcut { sequence: "A"; context: Qt.ApplicationShortcut; onActivated: { if(app) { var state = app.toggleABRepeat(); notificationLabel.text = "A-B Repeat: " + state; notificationLabel.visible = true; notificationTimer.restart() } } }
     Shortcut {
         sequence: "Escape"
         context: Qt.ApplicationShortcut
