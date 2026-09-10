@@ -875,6 +875,7 @@ ApplicationWindow {
             MenuItem { text: "Media Info            I"; checkable: true; checked: mediaInfoVisible; onTriggered: mediaInfoVisible = !mediaInfoVisible }
             Menu {
                 id: chaptersMenu
+                objectName: "chapterMenu"
                 title: "Chapters (" + (app && app.chapters ? app.chapters.length : 0) + ")"
                 enabled: app && app.chapters && app.chapters.length > 0
                 Instantiator {
@@ -889,29 +890,30 @@ ApplicationWindow {
             }
             Menu {
                 title: "Video Filters"
-                MenuItem { text: "Reset All Filters"; onTriggered: { window.videoBrightness = 0.0; window.videoContrast = 0.0; window.videoSaturation = 0.0; } }
+                MenuItem { text: "Reset All Filters   Ctrl+0"; onTriggered: { window.videoBrightness = 0.0; window.videoContrast = 0.0; window.videoSaturation = 0.0; } }
                 MenuSeparator {}
                 Menu {
-                    title: "Brightness (" + Math.round(window.videoBrightness * 100) + "%)"
-                    MenuItem { text: "Increase"; onTriggered: window.videoBrightness = Math.min(1.0, window.videoBrightness + 0.1) }
-                    MenuItem { text: "Decrease"; onTriggered: window.videoBrightness = Math.max(-1.0, window.videoBrightness - 0.1) }
+                    title: "Brightness (" + Math.round(window.videoBrightness * 100) + "%)  ]"
+                    MenuItem { text: "Increase   ]"; onTriggered: window.videoBrightness = Math.min(1.0, window.videoBrightness + 0.1) }
+                    MenuItem { text: "Decrease   ["; onTriggered: window.videoBrightness = Math.max(-1.0, window.videoBrightness - 0.1) }
                     MenuItem { text: "Reset"; onTriggered: window.videoBrightness = 0.0 }
                 }
                 Menu {
-                    title: "Contrast (" + Math.round(window.videoContrast * 100) + "%)"
-                    MenuItem { text: "Increase"; onTriggered: window.videoContrast = Math.min(1.0, window.videoContrast + 0.1) }
-                    MenuItem { text: "Decrease"; onTriggered: window.videoContrast = Math.max(-1.0, window.videoContrast - 0.1) }
+                    title: "Contrast (" + Math.round(window.videoContrast * 100) + "%)  Ctrl+]"
+                    MenuItem { text: "Increase   Ctrl+]"; onTriggered: window.videoContrast = Math.min(1.0, window.videoContrast + 0.1) }
+                    MenuItem { text: "Decrease   Ctrl+["; onTriggered: window.videoContrast = Math.max(-1.0, window.videoContrast - 0.1) }
                     MenuItem { text: "Reset"; onTriggered: window.videoContrast = 0.0 }
                 }
                 Menu {
-                    title: "Saturation (" + Math.round(window.videoSaturation * 100) + "%)"
-                    MenuItem { text: "Increase"; onTriggered: window.videoSaturation = Math.min(1.0, window.videoSaturation + 0.1) }
-                    MenuItem { text: "Decrease"; onTriggered: window.videoSaturation = Math.max(-1.0, window.videoSaturation - 0.1) }
+                    title: "Saturation (" + Math.round(window.videoSaturation * 100) + "%)  Shift+]"
+                    MenuItem { text: "Increase   Shift+]"; onTriggered: window.videoSaturation = Math.min(1.0, window.videoSaturation + 0.1) }
+                    MenuItem { text: "Decrease   Shift+["; onTriggered: window.videoSaturation = Math.max(-1.0, window.videoSaturation - 0.1) }
                     MenuItem { text: "Reset"; onTriggered: window.videoSaturation = 0.0 }
                 }
             }
             Menu {
                 id: subtitlesMenu
+                objectName: "subTitleMenu"
                 title: "Subtitles          Y"
                 MenuItem { text: "None"; checkable: true; checked: app && app.activeSubtitleIndex < 0; onTriggered: if (app) { app.setActiveSubtitle(-1); app.setSubtitleVisible(false); subtitleTimer.stop(); subtitleLabel.text = "" } }
                 MenuSeparator {}
@@ -2346,6 +2348,13 @@ ApplicationWindow {
     Shortcut { sequence: "-"; context: Qt.ApplicationShortcut; onActivated: { if(app) { app.subtitleDelay -= 100; notificationLabel.text = "Subtitle Delay: " + app.subtitleDelay + " ms"; notificationLabel.visible = true; notificationTimer.restart() } } }
     Shortcut { sequence: "="; context: Qt.ApplicationShortcut; onActivated: { if(app) { app.subtitleDelay += 100; notificationLabel.text = "Subtitle Delay: " + app.subtitleDelay + " ms"; notificationLabel.visible = true; notificationTimer.restart() } } }
     Shortcut { sequence: "A"; context: Qt.ApplicationShortcut; onActivated: { if(app) { var state = app.toggleABRepeat(); notificationLabel.text = "A-B Repeat: " + state; notificationLabel.visible = true; notificationTimer.restart() } } }
+    Shortcut { sequence: "]"; context: Qt.ApplicationShortcut; onActivated: { window.videoBrightness = Math.min(1.0, window.videoBrightness + 0.1); notificationLabel.text = "Brightness: " + Math.round(window.videoBrightness * 100) + "%"; notificationLabel.visible = true; notificationTimer.restart() } }
+    Shortcut { sequence: "["; context: Qt.ApplicationShortcut; onActivated: { window.videoBrightness = Math.max(-1.0, window.videoBrightness - 0.1); notificationLabel.text = "Brightness: " + Math.round(window.videoBrightness * 100) + "%"; notificationLabel.visible = true; notificationTimer.restart() } }
+    Shortcut { sequence: "Ctrl+]"; context: Qt.ApplicationShortcut; onActivated: { window.videoContrast = Math.min(1.0, window.videoContrast + 0.1); notificationLabel.text = "Contrast: " + Math.round(window.videoContrast * 100) + "%"; notificationLabel.visible = true; notificationTimer.restart() } }
+    Shortcut { sequence: "Ctrl+["; context: Qt.ApplicationShortcut; onActivated: { window.videoContrast = Math.max(-1.0, window.videoContrast - 0.1); notificationLabel.text = "Contrast: " + Math.round(window.videoContrast * 100) + "%"; notificationLabel.visible = true; notificationTimer.restart() } }
+    Shortcut { sequence: "Shift+]"; context: Qt.ApplicationShortcut; onActivated: { window.videoSaturation = Math.min(1.0, window.videoSaturation + 0.1); notificationLabel.text = "Saturation: " + Math.round(window.videoSaturation * 100) + "%"; notificationLabel.visible = true; notificationTimer.restart() } }
+    Shortcut { sequence: "Shift+["; context: Qt.ApplicationShortcut; onActivated: { window.videoSaturation = Math.max(-1.0, window.videoSaturation - 0.1); notificationLabel.text = "Saturation: " + Math.round(window.videoSaturation * 100) + "%"; notificationLabel.visible = true; notificationTimer.restart() } }
+    Shortcut { sequence: "Ctrl+0"; context: Qt.ApplicationShortcut; onActivated: { window.videoBrightness = 0.0; window.videoContrast = 0.0; window.videoSaturation = 0.0; notificationLabel.text = "Video Filters: Reset"; notificationLabel.visible = true; notificationTimer.restart() } }
     Shortcut {
         sequence: "Escape"
         context: Qt.ApplicationShortcut

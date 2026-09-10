@@ -28,6 +28,10 @@ A cross-platform media player built with Python, PyQt6, QML, and Qt Multimedia (
 - **Settings dialog** — Catppuccin-inspired theme, stats view with Most Played, Reset button
 - **Help menu** — Documentation, Donate, About dialog
 
+## Known Issues
+
+- **Subtitle track selection in the Subtitles menu is not clickable** (View → Subtitles → Track). Items are correctly inserted (verified: track at menu index 2, enabled, `triggered` handler works), but mouse interaction is unconfirmed — TODO: debug later (menu item rendered as plain non-clickable text in the running app).
+
 ## Controls
 
 ### Top Bar (always visible)
@@ -108,6 +112,13 @@ Play/Pause, Mute, Previous (P), Next (N), Open File, Fullscreen (F), Visualizer 
 | **Y** | Toggle subtitles (auto-detects .srt/.ass) |
 | **-** | Advance subtitles by 100ms |
 | **=** | Delay subtitles by 100ms |
+| **[** | Brightness -10% |
+| **]** | Brightness +10% |
+| **Ctrl+[** | Contrast -10% |
+| **Ctrl+]** | Contrast +10% |
+| **Shift+[** | Saturation -10% |
+| **Shift+]** | Saturation +10% |
+| **Ctrl+0** | Reset all video filters |
 | **A** | Toggle A-B Repeat (None -> Set A -> Set B -> None) |
 
 ## Mouse Controls
