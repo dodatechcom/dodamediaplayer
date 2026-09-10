@@ -2,6 +2,8 @@ import os
 import sys
 import traceback
 
+os.environ.setdefault("QT_LOGGING_RULES", "qt.multimedia.ffmpeg*=false")
+
 from PyQt6.QtCore import Qt, QUrl
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
@@ -37,6 +39,12 @@ def _crash_handler(exctype, value, tb):
 def main():
     sys.excepthook = _crash_handler
     QQuickWindow.setDefaultAlphaBuffer(True)
+
+    try:
+        import av
+        av.logging.set_level(av.logging.ERROR)
+    except Exception:
+        pass
 
     app = QApplication(sys.argv)
     app.setApplicationName("Doda Media Player")
