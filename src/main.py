@@ -16,6 +16,39 @@ from src.core.config import Config
 
 CRASH_LOG = os.path.join(os.path.expanduser("~"), ".config", "doda-player", "crash.log")
 
+_QT_AV_NAMES = {
+    "linux": (["libQt6FFmpegStub-ssl.so.3", "libQt6FFmpegStub-crypto.so.3"],
+              "libavutil.so.59"),
+    "win32": ([], "avutil-59.dll"),
+    "darwin": ([], "libavutil.59.dylib"),
+}
+
+
+def _quiet_qt_ffmpeg():
+    """Lower the log level of the FFmpeg bundled with Qt Multimedia.
+
+    Qt ships its own FFmpeg (separate from PyAV's) whose av_log messages
+    bypass both PyAV's logging settings and Qt logging categories. In
+    particular it emits an AV_LOG_ERROR about CUDA hardware setup on every
+    video open. Since Qt surfaces real playback problems via its own error
+    machinery, we silence anything below FATAL from that copy of FFmpeg.
+    """
+    try:
+        import ctypes
+        from PyQt6.QtCore import QLibraryInfo
+        libdir = QLibraryInfo.path(QLibraryInfo.LibraryPath.LibrariesPath)
+        stubs, avutil = _QT_AV_NAMES.get(sys.platform, ([], "libavutil.so.59"))
+        for stub in stubs:
+            p = os.path.join(libdir, stub)
+            if os.path.exists(p):
+                ctypes.CDLL(p, mode=ctypes.RTLD_GLOBAL)
+        p = os.path.join(libdir, avutil)
+        if os.path.exists(p):
+            lib = ctypes.CDLL(p, mode=ctypes.RTLD_GLOBAL)
+            lib.av_log_set_level(8)
+    except Exception:
+        pass
+
 
 def _crash_handler(exctype, value, tb):
     msg = "".join(traceback.format_exception(exctype, value, tb))
@@ -45,6 +78,8 @@ def main():
         av.logging.set_level(av.logging.ERROR)
     except Exception:
         pass
+
+    _quiet_qt_ffmpeg()
 
     app = QApplication(sys.argv)
     app.setApplicationName("Doda Media Player")
