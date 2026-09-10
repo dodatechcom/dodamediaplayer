@@ -5,7 +5,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
-OUTPUT="$ROOT/build/installer/macos/Output"
+OUTPUT="$ROOT/build"
 mkdir -p "$OUTPUT"
 
 # Try .app bundle first, fall back to onedir

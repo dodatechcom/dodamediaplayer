@@ -2,7 +2,7 @@ import os
 import sys
 import traceback
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QUrl
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PyQt6.QtQml import QQmlApplicationEngine
@@ -66,7 +66,7 @@ def main():
     engine.rootContext().setContextProperty("app", controller)
 
     qml_file = os.path.join(qml_dir, "main.qml")
-    engine.load(qml_file)
+    engine.load(QUrl.fromLocalFile(qml_file))
 
     if not engine.rootObjects():
         raise RuntimeError("Failed to load QML - check crash.log for details")

@@ -2237,9 +2237,14 @@ ApplicationWindow {
         onDropped: function(drop) {
             if (drop.urls.length > 0) {
                 for (var u = 0; u < drop.urls.length; u++) {
-                    var path = drop.urls[u]
-                    if (path.toString().startsWith("file://"))
-                        path = path.toString().substring(7)
+                    var path = drop.urls[u].toString()
+                    if (path.startsWith("file:///")) {
+                        if (path.length > 9 && path[9] === ':') {
+                            path = path.substring(8)
+                        } else {
+                            path = path.substring(7)
+                        }
+                    }
                     if (app) app.playlist.add(path)
                 }
             }

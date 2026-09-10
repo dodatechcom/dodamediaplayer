@@ -7,13 +7,13 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 DIST="$ROOT/dist/doda-player"
-OUTPUT="$ROOT/build/installer/linux/Output"
+OUTPUT="$ROOT/build"
 mkdir -p "$OUTPUT"
 
 VERSION="0.1.1"
 PACKAGE="doda-media-player"
 ARCH="amd64"
-DEB_DIR="$OUTPUT/${PACKAGE}_${VERSION}_${ARCH}"
+DEB_DIR="$ROOT/build/installer/linux/Output/${PACKAGE}_${VERSION}_${ARCH}"
 
 if [ ! -d "$DIST" ]; then
     echo "ERROR: $DIST not found. Run PyInstaller first."
