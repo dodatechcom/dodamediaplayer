@@ -20,6 +20,14 @@ EQ_LABELS = ["31", "62", "125", "250", "500", "1k", "2k", "4k", "8k", "16k"]
 EQ_DEFAULT = [1.0] * EQ_BANDS
 
 
+def _quiet_av(av):
+    try:
+        av.logging.set_level(av.logging.ERROR)
+    except Exception:
+        pass
+    return av.open
+
+
 ALBUM_ART_DIR = os.path.join(tempfile.gettempdir(), "doda-album-art")
 
 
@@ -241,7 +249,7 @@ class AppController(QObject):
             return
         try:
             import av
-            container = av.open(path, metadata_encoding="latin-1", metadata_errors="ignore")
+            container = _quiet_av(av)(path, metadata_encoding="latin-1", metadata_errors="ignore")
             info = {}
             info["filename"] = os.path.basename(path)
             info["format"] = container.format.name if container.format else "Unknown"
@@ -320,7 +328,7 @@ class AppController(QObject):
         try:
             import av
             from PyQt6.QtGui import QImage
-            container = av.open(path, metadata_encoding="latin-1", metadata_errors="ignore")
+            container = _quiet_av(av)(path, metadata_encoding="latin-1", metadata_errors="ignore")
             for stream in container.streams:
                 if stream.type == "video":
                     d = stream.disposition
@@ -417,7 +425,7 @@ class AppController(QObject):
             return True
         try:
             import av
-            container = av.open(path, metadata_encoding="latin-1", metadata_errors="ignore")
+            container = _quiet_av(av)(path, metadata_encoding="latin-1", metadata_errors="ignore")
             result = False
             for stream in container.streams:
                 if stream.type == "video":

@@ -21,6 +21,7 @@ class AudioVisualizer:
     def _build_for_file(self, path: str, callback=None):
         try:
             import av
+            av.logging.set_level(av.logging.ERROR)
             container = av.open(path, metadata_encoding="latin-1", metadata_errors="ignore")
             audio_stream = next(
                 (s for s in container.streams if s.type == "audio"), None
