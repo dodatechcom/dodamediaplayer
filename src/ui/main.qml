@@ -14,6 +14,12 @@ ApplicationWindow {
     title: originalTitle
     color: "#1a1a1a"
 
+    onActiveChanged: {
+        if (!active) {
+            keyHandler.forceActiveFocus()
+        }
+    }
+
     property bool isVideoPlaying: false
     property string currentTrack: ""
     property string originalTitle: "Doda Media Player"
