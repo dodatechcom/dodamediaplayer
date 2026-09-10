@@ -266,20 +266,31 @@ class AppController(QObject):
                         info["audio_bitrate"] = f"{cc.bit_rate // 1000} kbps"
 
             chaps = []
-            if hasattr(container, 'chapters') and container.chapters:
-                for i, ch in enumerate(container.chapters):
+            chapters = getattr(container, "chapters", None)
+            if callable(chapters):
+                chapters = chapters()
+            if chapters:
+                for i, ch in enumerate(chapters):
                     title = f"Chapter {i+1}"
                     start_ms = 0
-                    if hasattr(ch, "metadata") and isinstance(ch.metadata, dict):
-                        title = ch.metadata.get("title", title)
-                    elif hasattr(ch, "title"):
-                        title = ch.title
-
-                    if hasattr(ch, "start") and hasattr(ch, "time_base"):
-                        start_ms = int(float(ch.start * ch.time_base) * 1000)
-                    elif hasattr(ch, "start_time"):
-                        start_ms = int(ch.start_time * 1000)
-
+                    if isinstance(ch, dict):
+                        metadata = ch.get("metadata")
+                        if isinstance(metadata, dict):
+                            title = metadata.get("title", title)
+                        start = ch.get("start")
+                        tb = ch.get("time_base")
+                        if start is not None and tb is not None:
+                            start_ms = int(float(start * tb) * 1000)
+                    else:
+                        metadata = getattr(ch, "metadata", None)
+                        if isinstance(metadata, dict):
+                            title = metadata.get("title", title)
+                        elif getattr(ch, "title", None):
+                            title = ch.title
+                        if hasattr(ch, "start") and hasattr(ch, "time_base"):
+                            start_ms = int(float(ch.start * ch.time_base) * 1000)
+                        elif hasattr(ch, "start_time"):
+                            start_ms = int(ch.start_time * 1000)
                     chaps.append({"title": title, "start_ms": start_ms})
             self._chapters = chaps
             self.chaptersChanged.emit()
