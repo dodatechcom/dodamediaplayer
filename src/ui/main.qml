@@ -875,12 +875,12 @@ ApplicationWindow {
             MenuItem { text: "Media Info            I"; checkable: true; checked: mediaInfoVisible; onTriggered: mediaInfoVisible = !mediaInfoVisible }
             Menu {
                 id: chaptersMenu
-                title: "Chapters"
+                title: "Chapters (" + (app && app.chapters ? app.chapters.length : 0) + ")"
                 enabled: app && app.chapters && app.chapters.length > 0
                 Instantiator {
                     model: app ? app.chapters : []
                     delegate: MenuItem {
-                        text: modelData.title
+                        text: formatTime(modelData.start_ms) + "  " + modelData.title
                         onTriggered: if (app) app.seekToChapter(index)
                     }
                     onObjectAdded: function(index, object) { chaptersMenu.insertItem(index, object) }
