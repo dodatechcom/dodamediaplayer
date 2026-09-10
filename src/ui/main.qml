@@ -732,14 +732,14 @@ ApplicationWindow {
 
         Menu {
             title: "File"
-            MenuItem { text: "Open File...         O"; onTriggered: app.openFile() }
-            MenuItem { text: "Open URL...         Ctrl+U"; onTriggered: app.openUrl() }
-            MenuItem { text: "Add to Playlist..."; onTriggered: app.playlistAddFile() }
+            MenuItem { text: "Open File...         O"; onTriggered: Timer.singleShot(0, function() { app.openFile() }) }
+            MenuItem { text: "Open URL...         Ctrl+U"; onTriggered: Timer.singleShot(0, function() { app.openUrl() }) }
+            MenuItem { text: "Add to Playlist..."; onTriggered: Timer.singleShot(0, function() { app.playlistAddFile() }) }
             MenuSeparator {}
             MenuItem { text: "Save Playlist"; onTriggered: app.savePlaylist() }
             MenuItem { text: "Load Playlist"; onTriggered: app.loadPlaylist() }
             MenuSeparator {}
-            MenuItem { text: "Open Subtitle File..."; onTriggered: app.openSubtitleFile() }
+            MenuItem { text: "Open Subtitle File..."; onTriggered: Timer.singleShot(0, function() { app.openSubtitleFile() }) }
             MenuSeparator {}
             Menu {
                 title: "Download"
@@ -2235,7 +2235,7 @@ ApplicationWindow {
         MenuItem { text: "Previous  (P)"; onTriggered: if (app) app.playPrevious() }
         MenuItem { text: "Next  (N)"; onTriggered: if (app) app.playNext() }
         MenuSeparator {}
-        MenuItem { text: "Open File...  (O)"; onTriggered: app.openFile() }
+        MenuItem { text: "Open File...  (O)"; onTriggered: Timer.singleShot(0, function() { app.openFile() }) }
         MenuItem { text: "Fullscreen  (F)"; onTriggered: window.toggleFullscreen() }
         MenuItem {
             text: "Visualizer: " + visModeNames[visualizerMode] + "  (V)"
