@@ -6,7 +6,7 @@ __pycache__/
 venv/
 *.egg-info/
 dist/
-build/*/Output/
+build/**/Output/
 build/doda-player/
 
 # IDE
