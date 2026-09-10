@@ -911,23 +911,26 @@ ApplicationWindow {
                 }
             }
             Menu {
+                id: subtitlesMenu
                 title: "Subtitles          Y"
                 MenuItem { text: "None"; checkable: true; checked: app && app.activeSubtitleIndex < 0; onTriggered: if (app) { app.setActiveSubtitle(-1); app.setSubtitleVisible(false); subtitleTimer.stop(); subtitleLabel.text = "" } }
                 MenuSeparator {}
-                Repeater {
+                Instantiator {
                     model: app ? app.subtitleTrackNames : []
                     MenuItem {
                         text: modelData
                         checkable: true
-                        checked: app && app.activeSubtitleIndex === index
+                        checked: app && app.activeSubtitleIndex === model.index
                         onTriggered: {
                             if (app) {
-                                app.setActiveSubtitle(index)
+                                app.setActiveSubtitle(model.index)
                                 app.setSubtitleVisible(true)
                                 subtitleTimer.start()
                             }
                         }
                     }
+                    onObjectAdded: function(index, object) { subtitlesMenu.insertItem(index + 2, object) }
+                    onObjectRemoved: function(index, object) { subtitlesMenu.removeItem(object) }
                 }
                 MenuSeparator {}
                 MenuItem {
