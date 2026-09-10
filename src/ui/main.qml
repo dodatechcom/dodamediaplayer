@@ -843,6 +843,18 @@ ApplicationWindow {
                     }
                 }
             }
+            MenuSeparator {}
+            MenuItem {
+                text: "A-B Repeat: " + (app && app.abRepeatA >= 0 ? (app.abRepeatB >= 0 ? "Looping" : "A set") : "Off") + "          A"
+                onTriggered: {
+                    if (app) {
+                        var state = app.toggleABRepeat();
+                        notificationLabel.text = "A-B Repeat: " + state;
+                        notificationLabel.visible = true;
+                        notificationTimer.restart();
+                    }
+                }
+            }
         }
 
         Menu {
@@ -908,6 +920,29 @@ ApplicationWindow {
                                 app.setSubtitleVisible(true)
                                 subtitleTimer.start()
                             }
+                        }
+                    }
+                }
+                MenuSeparator {}
+                MenuItem {
+                    text: "Delay -100 ms (-)"
+                    onTriggered: {
+                        if (app) {
+                            app.subtitleDelay -= 100;
+                            notificationLabel.text = "Subtitle Delay: " + app.subtitleDelay + " ms";
+                            notificationLabel.visible = true;
+                            notificationTimer.restart()
+                        }
+                    }
+                }
+                MenuItem {
+                    text: "Delay +100 ms (=)"
+                    onTriggered: {
+                        if (app) {
+                            app.subtitleDelay += 100;
+                            notificationLabel.text = "Subtitle Delay: " + app.subtitleDelay + " ms";
+                            notificationLabel.visible = true;
+                            notificationTimer.restart()
                         }
                     }
                 }
